@@ -12,8 +12,8 @@
 #include "tbb/parallel_sort.h"
 #include "tbb/parallel_for.h"
 #include "tbb/parallel_for_each.h"
-#include "tbb/mutex.h"
-#include "tbb/pipeline.h"
+#include "oneapi/tbb/mutex.h"
+#include "oneapi/tbb/parallel_pipeline.h"
 #include "util.hpp"
 #include "point.hpp"
 
@@ -364,7 +364,7 @@ namespace psh
 
 			tbb::parallel_pipeline(num_cores,
 				// a serial filter picks up (num_offsets / num_cores) indices
-				tbb::make_filter<void, IndexInt>(tbb::filter::serial,
+				tbb::make_filter<void, IndexInt>(tbb::filter_mode::serial_in_order,
 					[&, group_size](tbb::flow_control& fc) {
 						if (found || chunk_index >= r)
 						{
@@ -374,7 +374,7 @@ namespace psh
 						return chunk_index;
 					}) &
 				// and runs each chunk in parallel
-				tbb::make_filter<IndexInt, void>(tbb::filter::parallel,
+				tbb::make_filter<IndexInt, void>(tbb::filter_mode::parallel,
 					[&, group_size](IndexInt i0)
 					{
 						for (IndexInt i = i0; i < i0 + group_size && !found; i++)
